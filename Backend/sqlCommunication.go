@@ -19,15 +19,23 @@ func connectToDB() *gorm.DB {
 	if err != nil {
 		log.Fatal(err)
 	}
+	createPetitionTable()
+	createUserTable()
 	return db
 }
 
 func createPetitionTable() {
-
+	db.AutoMigrate(&Petition{})
 }
 
-func createUserTable() {}
+func createUserTable() {
+	db.AutoMigrate(&User{})
+}
 
-func GetPetition() {}
+func GetPetition() {
+	connectToDB()
+}
 
-func GetUser() {}
+func GetUser() {
+	connectToDB()
+}
