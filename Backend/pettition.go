@@ -5,6 +5,7 @@ import (
 )
 
 type Petition struct {
+	Id           uint      `gorm:"primary_key`
 	Title        string    `json:"title"`
 	Text         string    `json:"text"`
 	StartingDate time.Time `json:"startingDate"`
