@@ -2,23 +2,6 @@ import requests
 from bs4 import BeautifulSoup
 
 
-def get_current_names():
-    resp = requests.get("https://www.oesterreich.gv.at/themen/transparenz_und_partizipation_in_der_demokratie/buergerbeteiligung/2/Seite.320475.html")
-    divClass = "alert alert-success fade show"
-    if resp.status_code == 200:
-        soup = BeautifulSoup(resp.text, "html.parser")
-        div = soup.find_all("div", class_=divClass)
-        recent_initiatives = []
-        ul = div[0].find_all("li")
-        for el in ul:
-            text = el.get_text().strip()
-            text = text[1:-1]
-            recent_initiatives.append(text)
-        print(recent_initiatives)
-        return recent_initiatives
-    return "nothing found"
-
-
 def get_number_of_current(soup):
     #class of the website where the current initiatives are listed
     divClass = "alert alert-success fade show"
@@ -41,32 +24,48 @@ def get_all_li():
         initiatives = []
 
         num = 0
-        print(len(uls))
         for ul in uls:
             num += 1
             if num == 5 or num == 6:
-                print("###############"+str(num)+"######################")
+                if num == 6:
+                    initiatives.append("p")
                 els = ul.find_all("li")
+                i = 0
                 for el in els:
-                    t = el.get_text().strip()
-                    #t = el[1:-1]
+                    i += 1
+                    t = el.get_text().strip().split("–")[0]
+                    t = t.replace("\xa0", "")
+                    if num == 5:
+                        t = t[1:-1]
                     initiatives.append(t)
-                print(initiatives)
-                     
+        return initiatives
 
 
+def compare_to_existing(initiatives):
+    try:
+        with open("initiatives.csv", "r") as f:
+            cont = f.read()
+            old_ini = cont.split(";")
+            print(old_ini)
+            return initiatives == old_ini 
+    except:
+        return False
 
-"""
-def get_possible_names():
-    resp = requests.get("https://www.oesterreich.gv.at/themen/transparenz_und_partizipation_in_der_demokratie/buergerbeteiligung/2/Seite.320475.html")
-    if resp.status_code == 200:
-        soup = BeautifulSoup(resp.text, "html.parser")
-        par = soup.find_all("p", text=lambda text: text and "(Einleitungsverfahren):" in text)
-        print(len(par))
-        ls = par[0].find_next_sibling("ul")
-        print(ls)
-    print("Done")
-"""
+
+def create_file(initiatives):
+    with open("initiatives.csv", "w") as f:
+        for ini in initiatives:
+            f.write(ini)
+            f.write("; ")
+
+
+def fancy_stuff_when_changed():
+    pass
 
 if __name__ == "__main__":
-    get_all_li()
+    initiatives = get_all_li()
+    if not compare_to_existing(initiatives=initiatives):
+        create_file(initiatives)
+        fancy_stuff_when_changed()
+
+    print("Done")
